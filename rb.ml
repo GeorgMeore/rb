@@ -32,11 +32,6 @@ let insert (x : 'a) (t : 'a tree) : 'a tree =
              else fixRR (c, T((find_insert l), y, r))
   in let (_, n) = find_insert t in (B, n)
 
-let rec member (x : 'a) (t : 'a tree) : bool =
-  match t with
-  | (_, E) -> false
-  | (_, T(l, y, r)) -> x = y || member x l || member x r
-
 let fixBB (t : 'a tree) : 'a tree =
   match t with
   | (R, T((BB, x), y, (B, T(c, z, d)))) -> fixRR (B, T((R, T((B, x), y, c)), z, d))
@@ -72,3 +67,60 @@ let remove (x : 'a) (t : 'a tree) : 'a tree =
                then fixBB (c, T(l, y, find_remove r))
                else fixBB (c, T(find_remove l, y, r))
   in let (_, n) = find_remove t in (B, n)
+
+let rec member (x : 'a) (t : 'a tree) : bool =
+  match t with
+  | (_, E) -> false
+  | (_, T(l, y, r)) -> x = y || member x l || member x r
+
+let rec size (t : 'a tree) : int =
+  match t with
+  | (_, E) -> 0
+  | (_, T(l, y, r)) -> 1 + size l + size r
+
+let nth (n : int) (t : 'a tree) : 'a option =
+  let rec search_nth n t =
+    match (n, t) with
+    | (n, (_, E)) -> (n, None)
+    | (n, (_, T(l, x, r))) ->
+      match search_nth n l with
+      | (-1, v) -> (-1, v)
+      | (0,  _) -> (-1, Some x)
+      | (n',  _) -> search_nth (n' - 1) r
+  in let (_, v) = search_nth n t in v
+
+let empty = (B, E)
+
+let valid (t : 'a tree) : bool =
+  let rec trav_check t =
+    match t with
+    | (R, E) -> (-1, false)
+    | (BB, _) -> (-1, false)
+    | (B, E) -> (1, true)
+    | (R, T((R, _), _, (R, _))) -> (-1, false)
+    | (c, T(l, x, r)) ->
+      let ((hl, okl), (hr, okr)) = (trav_check l, trav_check r)
+      in ((if c = B then hl + 1 else hl), okl && okr && hl = hr)
+  in let (_, ok) = trav_check t in ok
+
+(* TODO: more elaborate testing *)
+let () =
+  Random.self_init ();
+  let t = ref empty in
+  for i = 0 to 5000 do
+    let count = size !t in
+    if count > 0 && Random.bool () then
+      let el = Option.get (nth (Random.int count) !t) in (
+        t := remove el !t;
+        if member el !t || not (valid !t)
+          then failwith (Printf.sprintf "FAIL: remove %d\n" el)
+          else Printf.printf "OK: remove %d\n" el
+      )
+    else
+      let el = (Random.int_in_range ~min:(-1000) ~max:1000) in (
+        t := insert el !t;
+        if not (member el !t) || not (valid !t)
+          then failwith (Printf.sprintf "FAIL: insert %d\n" el)
+          else Printf.printf "OK: insert %d\n" el
+      )
+  done
