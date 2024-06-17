@@ -1,0 +1,8 @@
+This is a deliberatly simple red-black tree implementation in OCaml.
+
+I did it as an exercise to better understand two wonderful papers:
+ - "Red-Black Trees in a Functional Setting" by Chris Okasaki
+ - "Deletion: The curse of the red-black tree" by Kimball Germane and Matthew Might.
+
+This approach to red-black trees feels much more natural than "traditional"
+imperative approaches (e.g. the implementation from Introduction to Algorithms).

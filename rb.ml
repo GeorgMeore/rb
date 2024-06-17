@@ -1,9 +1,3 @@
-(*
- * This is a red-black tree implementation based on the articles:
- * "Red-Black Trees in a Functional Setting" by Chris Okasaki
- * "Deletion: The curse of the red-black tree" by Kimball Germane and Matthew Might.
- *)
-
 type color = R | B | BB
 
 type 'a node = E | T of 'a tree * 'a * 'a tree
