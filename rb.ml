@@ -72,6 +72,7 @@ let rec size (t : 'a tree) : int =
   | (_, E) -> 0
   | (_, T(l, y, r)) -> 1 + size l + size r
 
+(* TODO: this operation can be made O(log n) if nodes will also store sizes *)
 let nth (n : int) (t : 'a tree) : 'a option =
   let rec search_nth n t =
     match (n, t) with
@@ -104,17 +105,15 @@ let () =
   for i = 0 to 5000 do
     let count = size !t in
     if count > 0 && Random.bool () then
-      let el = Option.get (nth (Random.int count) !t) in (
-        t := remove el !t;
-        if member el !t || not (valid !t)
-          then failwith (Printf.sprintf "FAIL: remove %d\n" el)
-          else Printf.printf "OK: remove %d\n" el
-      )
+      let el = Option.get (nth (Random.int count) !t) in
+      t := remove el !t;
+      if member el !t || not (valid !t)
+        then failwith (Printf.sprintf "FAIL: remove %d\n" el)
+        else Printf.printf "OK: remove %d\n" el
     else
-      let el = (Random.int_in_range ~min:(-1000) ~max:1000) in (
-        t := insert el !t;
-        if not (member el !t) || not (valid !t)
-          then failwith (Printf.sprintf "FAIL: insert %d\n" el)
-          else Printf.printf "OK: insert %d\n" el
-      )
+      let el = Random.int 2000 - 1000 in
+      t := insert el !t;
+      if not (member el !t) || not (valid !t)
+        then failwith (Printf.sprintf "FAIL: insert %d\n" el)
+        else Printf.printf "OK: insert %d\n" el
   done
